@@ -1,0 +1,28 @@
+kind:           Deployment          
+apiVersion:     apps/v1             
+
+metadata:
+    name:       deployment-ivan     
+
+spec:  
+    replicas: 2   
+    selector: # Indicamos la plantilla.. a pesar de estar definida dentro del archivo
+        matchLabels:
+            app: miwebserver    # Vincula el deployment con la plantilla que samos para generar las replicias.
+    template: 
+        metadata:
+            name:       pod-template-ivan  
+            labels:
+                app: miwebserver
+        spec:  
+            containers:
+                - name:     contenedor1
+                  image:    bitnami/nginx 
+                  imagePullPolicy: IfNotPresent 
+            resources:
+                request:                
+                    cpu:        100m
+                    memory:     100Mi
+                limits:                 
+                    cpu:        100m    
+                    memory:     100Mi   

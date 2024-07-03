@@ -1,0 +1,25 @@
+kind:           Pod         # Tipo de recurso
+apiVersion:     v1          # Librería que declara ese Tipo de Objeto: libreria/version
+                            # Salvo para los objetos básicos de kubernetes, 
+                            # donde la libreria no se pone, se omite... y solo se da la versión
+
+metadata:
+    name:       pod-ivan     # Identificador único del objeto que estoy configurando en Namespace | Cluster
+                            # Depende de si el tipo de objeto trabaja a nivel de namespace o no.
+                            # Namespace: Espacio de nombres UNICO
+
+spec:   # Casi todo tipo de recurso requiere de una especificación.
+        # Gloriosas excepciones: ConfigMap | Secret
+    containers:
+        - name:     contenedor1
+          image:    bitnami/nginx # OJO: En openshift imágenes que no se ejecuten como usuario ROOT
+          imagePullPolicy: IfNotPresent # IfNotPresent
+            # Que nos interesa? En qué casos usaremos Always y en qué casos usaremos IfNotPresent???
+    resources:
+        request:                # Lo que bloquea
+            cpu:        100m
+            memory:     100Mi
+        limits:                 # Lo que puede crecer si hay hueco... Y OJO: Si deja de haberlo qué hace?
+            cpu:        100m       # Le cierra el grifo. Te mando menos peticiones a la CPU
+            memory:     100Mi         # Te reinicia el pod.
+---
