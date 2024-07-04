@@ -1,8 +1,23 @@
 # Este fichero lo crea operaciones del cluster
 
 # Proyecto
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: wp
 ---
 # ResourceQuota
-
+kind: ResourceQuota
+apiVersion: v1
+metadata:
+  name: wp
+  namespace: wp
+spec:
+  hard:
+    limits.cpu: '6'
+    limits.memory: 4Gi
+    pods: '4'
+    requests.cpu: '4'
+    requests.memory: 4Gi
 ---
 ## LimitRange?

@@ -115,7 +115,7 @@ spec:
         requests:
             storage: 1Gi
     accessModes:
-        - ReadWriteMany # Que pueda ser montado en varios pods
+        - ReadWriteOnce # Que pueda ser montado en varios pods
 
 
 ---
@@ -196,6 +196,41 @@ spec:
 ---
 
 ## Ingress -> Route
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: wp
+spec:
+  to:
+    kind: Service
+    name: wp
+    weight: 100
+  port:
+    targetPort: 80
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None
+
 ---
 ## NetworkPolicy
 ## - Proteger la BBDD: Wordpress + Adminer
+
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: bbdd-wp
+spec:
+  podSelector:
+    matchLabels:
+      app: bbdd
+  ingress:
+    - ports:
+        - protocol: TCP
+          port: 3306
+      from:
+        - podSelector:
+            matchLabels:
+              app: wp
+  policyTypes:
+    - Ingress
