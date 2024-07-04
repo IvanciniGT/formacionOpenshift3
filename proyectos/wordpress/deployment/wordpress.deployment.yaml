@@ -170,7 +170,7 @@ spec:
                             key:    contrasena
                   volumeMounts:
                     - name:         almacenamiento-wp
-                      mountPath:    /var/lib/mysql
+                      mountPath:    /var/www/html
             volumes:      
                 - name:             almacenamiento-wp
                   persistentVolumeClaim:
