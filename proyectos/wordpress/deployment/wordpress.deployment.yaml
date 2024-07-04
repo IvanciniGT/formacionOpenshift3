@@ -1,0 +1,201 @@
+# Este es el que genera desarrollo/negocio
+
+# ServiceAccout
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: wp
+---
+# Secret para la BBDD
+apiVersion: v1
+kind: Secret
+metadata:
+  name: datos-conexion-bbdd
+data: # 
+    nombreBBDD:     bWlCRA==
+    usuario:        dXN1YXJpbw==
+    contrasena:     cGFzc3dvcmQ=
+    contrasenaRoot: cGFzc3dvcmQ=
+---
+## BBDD - Mariadb
+### Statefulset
+#### Plantilla de POD
+#### Plantilla de PVC
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: bbdd
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            app:  bbdd
+    serviceName: bbdd # En dns generar entradas para cada instancia del statefulset
+                      # bbdd-0.bbdd
+    template:
+        metadata:
+            name: bbdd
+            labels:  
+              app:  bbdd
+        spec:
+            serviceAccountName:     wp
+            containers:
+                - name:             bbdd
+                  image:            mariadb:latest
+                  imagePullPolicy:  IfNotPresent
+                  resources:
+                    requests:
+                        memory:     512Mi
+                        cpu:        1
+                    limits:
+                        memory:     512Mi
+                        cpu:        2
+                  env:
+                    - name:         MARIADB_ROOT_PASSWORD
+                      valueFrom:
+                        secretKeyRef:
+                            name:   datos-conexion-bbdd
+                            key:    contrasenaRoot
+                    - name:         MARIADB_DATABASE
+                      valueFrom:
+                        secretKeyRef:
+                            name:   datos-conexion-bbdd
+                            key:    nombreBBDD
+                    - name:         MARIADB_USER
+                      valueFrom:
+                        secretKeyRef:
+                            name:   datos-conexion-bbdd
+                            key:    usuario
+                    - name:         MARIADB_PASSWORD
+                      valueFrom:
+                        secretKeyRef:
+                            name:   datos-conexion-bbdd
+                            key:    contrasena
+                  volumeMounts:
+                    - name:         pvc-bbdd-template
+                      mountPath:    /var/lib/mysql
+    volumeClaimTemplates:
+        -   metadata:
+              name: pvc-bbdd-template
+            spec:
+                # storageClass: # Si no lo pongo, se me entregará un volumen generado por el provisionador por defecto
+                resources:
+                    requests:
+                        storage: 1Gi
+                accessModes:
+                    - ReadWriteOnce # Para mi
+
+    
+---
+## Servicio ClusterIP para la BBDD (BALANCEO y un nombre fqdn)
+kind:       Service
+apiVersion: v1
+metadata:
+    name:   bbdd # Nombre fqdn para cceder a la IP de balanceo que se creará
+spec:
+    type:   ClusterIP # Es el por defecto... no me haría falta ponerlo
+    ports:  
+        - port: 3306 # En la IP de balanceo
+          targetPort: 3306 # Del contenedor que hay detrás
+    selector:
+          app:  bbdd # Los pods que haya con esta etiqueta (TODOS LOS CREADOS DESDE MI PLANTILLA, donde tengo definida esa etiqueta)
+                     # Sirven para dar este servicio (son el backend del servicio)
+---
+## Petición de volumen para el WORDPRESS
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-wp
+spec:
+    # storageClass: # Si no lo pongo, se me entregará un volumen generado por el provisionador por defecto
+    resources:
+        requests:
+            storage: 1Gi
+    accessModes:
+        - ReadWriteMany # Que pueda ser montado en varios pods
+
+
+---
+## Apache - PHP + WORDPRESS
+### Deployment
+#### Plantilla de POD
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wp
+spec:
+    replicas: 2
+    selector:
+        matchLabels:
+            app:  wp
+    template:
+        metadata:
+            name: wp
+            labels:  
+                app:  wp
+        spec:
+            serviceAccountName:     wp
+            containers:
+                - name:             wp
+                  image:            wordpress:latest
+                  imagePullPolicy:  IfNotPresent
+                  resources:
+                    requests:
+                        memory:     512Mi
+                        cpu:        1
+                    limits:
+                        memory:     512Mi
+                        cpu:        2                  
+                  env:
+                    - name:         WORDPRESS_DB_HOST
+                      value:        bbdd
+                    - name:         WORDPRESS_DB_NAME
+                      valueFrom:
+                        secretKeyRef:
+                            name:   datos-conexion-bbdd
+                            key:    nombreBBDD
+                    - name:         WORDPRESS_DB_USER
+                      valueFrom:
+                        secretKeyRef:
+                            name:   datos-conexion-bbdd
+                            key:    usuario
+                    - name:         WORDPRESS_DB_PASSWORD
+                      valueFrom:
+                        secretKeyRef:
+                            name:   datos-conexion-bbdd
+                            key:    contrasena
+                  volumeMounts:
+                    - name:         almacenamiento-wp
+                      mountPath:    /var/lib/mysql
+            volumes:      
+                - name:             almacenamiento-wp
+                  persistentVolumeClaim:
+                    claimName:      pvc-wp
+
+---
+
+## Servicio ClusterIP para el Wordpress
+
+## Servicio ClusterIP para la BBDD (BALANCEO y un nombre fqdn)
+kind:       Service
+apiVersion: v1
+metadata:
+    name:   wp # Nombre fqdn para cceder a la IP de balanceo que se creará
+spec:
+    type:   ClusterIP # Es el por defecto... no me haría falta ponerlo
+    ports:  
+        - port: 80 # En la IP de balanceo
+          targetPort: 80 # Del contenedor que hay detrás
+    selector:
+          app:  wp # Los pods que haya con esta etiqueta (TODOS LOS CREADOS DESDE MI PLANTILLA, donde tengo definida esa etiqueta)
+                     # Sirven para dar este servicio (son el backend del servicio)
+---
+
+## Ingress -> Route
+---
+## NetworkPolicy
+## - Proteger la BBDD: Wordpress + Adminer
