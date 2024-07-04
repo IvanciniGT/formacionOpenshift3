@@ -16,7 +16,7 @@ Para provisionar ese pod me las veo y me las deseo... Necesito una máquina que 
 
 # Tareas
 
-- Vamos a montar un despliegue de una app desde 0 ... después lo tiraremos a la basura
+- Vamos a montar un despliegue de una app desde 0 ... después lo tiraremos a la basura (TODO: SC)
 - Vamos a usar un chart de helm para el despliegue de esa app
 - SonarQube mediante HELM, pero dejandolo guay!
 
@@ -60,3 +60,51 @@ Si estoy en un WP creado en el ns: wp
     Si no existe ERROR
 Cuando quiero acceder a servicios de otro NS, entonces si uso:
     - servicio.namespace
+
+
+---
+
+# Probes
+
+Por defecto, cómo monitoriza kubernetes/Openshift un pod? O No hay monitorización?
+Lo que kubernetes monitoriza es el proceso a nivel de SO. Si está corriendo o no!
+Si no esta corriendo el proceso principal que debe eecutarse en un contenedor de un pod, KUBERNETES REINICIA EL POD
+
+Esto es suficiente? NO
+Puede ser que el proceso esté corriendo, pero que no esté funcionando como debe. Por ejemplo:
+- Por estar mal configurado
+- OutOufMemory (con el uso... no inicialmente)
+- Que tenga hilos bloqueados en el proceso... y el proceso no esté ejecutando trabajo.
+    Weblogic / Websphere (ThreadStuck)
+
+- Startup
+- Lifeness
+- Readiness
+
+En cada una lo que pongo es un comando que si se ejecuta sin problemas se considera que la prueba SE HA PASADO!
+    curl
+    mysql < "SELECT 1"
+Esas pruebas se ejecutan en distintos momentos del tiempo:
+- Lo primero las de startup... El sistema puede tardar un rato en iniciar... Y le doy tiempo
+  Si no se supera: REINICIO por parte de Kubernetes
+  Si se supera.. ya no se ejecuta nunca más (a no ser que haya un reinicio)
+ - Y pasamos a ejecutar las pruebas de Lifeness para ver si el sistema está arrancado.
+  Para ver si se mantiene arrancado.
+    Esa prueba la haremos cada X tiempo 
+  Si el sistema no se mantiene arrancado, kubernetes LO REINICIA DE NUEVO¡
+  Si el sistema se mantiene arrancado:
+ - Paso a hacer pruebas de readyness... para ver si el sistema está listo para prestar servicio
+  Si la prueba de readyness falla:        kubernetes lo saca de balanceo del servicio asociado... PERO NO SE REINICIA!
+                                          continua haciendole pruebas de readyness y de lifeness
+  Si la prueba de readyness funciona:     kubernetes lo mete en balanceo.
+                                          continua haciendole pruebas de readyness.
+                                          
+Por qué pruebas de readyness y lifeness:
+- Por ejemplo, el WP, NECTCLOUD puede entrar en modo de mantenimiento
+  (después de una actualización...o porque le instale unos plugins)
+  En ese momento no permite a la gente hacer login... No lo meto en balanceo... 
+  Pero quiero reiniciarlo? NO
+- Por ejemplo, pongo una BBDD en mnto para hacerle un backup/restore
+  La BBDD no va a estar lista para prestar servicio. No contesta a nadie.
+  Pero no quiero reiniciarla... está haciendo su trabajo.
+  Otra cosa es que no esté lista para prestar servicio
