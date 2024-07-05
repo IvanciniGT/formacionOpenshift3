@@ -78,9 +78,13 @@ spec:
             - -ec
             - |
               mkdir -p /bitnami/wordpress
-              find /bitnami/wordpress -mindepth 0 -maxdepth 1 -not -name ".snapshot" -not -name "lost+found" | xargs -r chown -R 1.00102e+09:1001
+              find /bitnami/wordpress -mindepth 0 -maxdepth 1 -not -name ".snapshot" -not -name "lost+found" | xargs -r chown -R 1001:1001
           securityContext:
-            runAsUser: 0
+            runAsUser: 0 # root
+            # Cambiar el usuario a otro más cutre? 1001
+            # Con que usuario se ejecuta el WP?
+            # Poner un scc al serviceaccount que permita ejecutar usuario root. INTERESA? Casi que no... Lo intentaré evitar en lo que pueda
+            
             seLinuxOptions: {}
           resources:
             limits:
