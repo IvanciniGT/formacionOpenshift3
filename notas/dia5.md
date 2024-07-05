@@ -134,3 +134,16 @@ A nivel de SecurityContext del POD, el desarrollador puede seleccionar:
 - FSGroup < Es el grupo que se asocia a los archivos y carpetas de un volumen al montarse (hace un chmod de los archivos al montarse el volumen. y ojo, que puede tardar un huevo!)
 - seLinuxOptions
 - Capabilities
+- 
+---
+
+OPCION 1... Menos costosa:
+Dejarlo así.. Crear un SCC para sonar que permita usuario ROOT al contenedor SysCTL
+
+OPCION 2...  A NIVEL DE HOST... en 2 o 3
+echo "vm.max_map_count=262144" | sudo tee -a /etc/sysctl.conf
+sudo sysctl -w vm.max_map_count=262144
+A nivel del host.
+Ese host ponerle etiqueta sonarqube=true
+
+Y si hago eso, ya no necesito para nada ejecutar sysctl dentro del despliegue como un init container

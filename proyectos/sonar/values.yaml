@@ -163,8 +163,8 @@ tolerations: []
 # Ref: https://kubernetes.io/docs/user-guide/node-selection/
 # add a label to a node with the following command
 # kubectl label node <node> sonarqube=true
-nodeSelector: {}
-#  sonarqube: "true"
+nodeSelector: 
+    sonarqube: "true"
 
 # hostAliases allows the modification of the hosts file inside a container
 hostAliases: []
@@ -278,7 +278,7 @@ initSysctl:
 
 # This should not be required anymore, used to chown/chmod folder created by faulty CSI driver that are not applying properly POSIX fsgroup.
 initFs:
-  enabled: true
+  enabled: false
   # Image: busybox:1.36
   # Compatible with podSecurity standard baseline.
   securityContext:
@@ -393,12 +393,12 @@ annotations: {}
 ## Adjust these values to your needs, you can find more details on the main README of the chart.
 resources:
   limits:
-    cpu: 800m
-    memory: 6144M # La diferencia entre este tamaño y el de abajo va dedicada a cache
+    cpu: 2000m
+    memory: 2Gi
     ephemeral-storage: 512000M
   requests:
-    cpu: 400m
-    memory: 2048M
+    cpu: 100m
+    memory: 2Gi
     ephemeral-storage: 1536M
 
 persistence:
@@ -535,7 +535,7 @@ postgresql:
       enabled: false
   serviceAccount:
     ## If enabled = true, and name is not set, postgreSQL will create a serviceAccount
-    enabled: false
+    enabled: true
     # name:
 
 # Additional labels to add to the pods:
