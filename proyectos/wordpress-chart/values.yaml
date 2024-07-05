@@ -27,8 +27,6 @@ global:
     openshift:
       ## @param global.compatibility.openshift.adaptSecurityContext 
       ## Adapt the securityContext sections of the deployment to make them compatible with Openshift 
-      ## restricted-v2 SCC: remove runAsUser, runAsGroup and fsGroup and
-      ## let the platform use their allowed default IDs. 
       ## Possible values: auto (apply if the detected running cluster is Openshift), 
       ## force (perform the adaptation always), disabled (do not perform adaptation)
       ##
@@ -445,7 +443,7 @@ podSecurityContext:
 containerSecurityContext:
   enabled: true
   seLinuxOptions: {}
-  runAsUser: 1001
+  runAsUser: 1001020000
   runAsGroup: 1001
   runAsNonRoot: true
   privileged: false
@@ -919,7 +917,6 @@ volumePermissions:
   ##     memory: 512Mi
   ##   limits:
   ##     cpu: 3
-  ##     memory: 1024Mi
   ##
   resources: {}
   ## Init container' Security Context
@@ -928,9 +925,8 @@ volumePermissions:
   ## @param volumePermissions.containerSecurityContext.seLinuxOptions [object,nullable] Set SELinux options in container
   ## @param volumePermissions.containerSecurityContext.runAsUser User ID for the init container
   ##
-  containerSecurityContext:
-    seLinuxOptions: {}
-    runAsUser: 0
+  
+  containerSecurityContext: {}
 ## @section Other Parameters
 ##
 

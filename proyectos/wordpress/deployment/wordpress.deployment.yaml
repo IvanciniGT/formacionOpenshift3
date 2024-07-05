@@ -1,5 +1,4 @@
 # Este es el que genera desarrollo/negocio
-
 # ServiceAccout
 apiVersion: v1
 kind: ServiceAccount

@@ -10,7 +10,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: mariadb
     app.kubernetes.io/version: 11.3.2
-    helm.sh/chart: mariadb-18.2.4
+    helm.sh/chart: mariadb-18.2.6
 spec:
   podSelector:
     matchLabels:
@@ -18,7 +18,7 @@ spec:
       app.kubernetes.io/managed-by: Helm
       app.kubernetes.io/name: mariadb
       app.kubernetes.io/version: 11.3.2
-      helm.sh/chart: mariadb-18.2.4
+      helm.sh/chart: mariadb-18.2.6
   policyTypes:
     - Ingress
     - Egress
@@ -40,7 +40,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: wordpress
     app.kubernetes.io/version: 6.5.5
-    helm.sh/chart: wordpress-22.4.16
+    helm.sh/chart: wordpress-22.4.17
 spec:
   podSelector:
     matchLabels:
@@ -67,7 +67,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: mariadb
     app.kubernetes.io/version: 11.3.2
-    helm.sh/chart: mariadb-18.2.4
+    helm.sh/chart: mariadb-18.2.6
     app.kubernetes.io/component: primary
 spec:
   maxUnavailable: 1
@@ -88,7 +88,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: wordpress
     app.kubernetes.io/version: 6.5.5
-    helm.sh/chart: wordpress-22.4.16
+    helm.sh/chart: wordpress-22.4.17
 spec:
   maxUnavailable: 1
   selector:
@@ -107,7 +107,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: mariadb
     app.kubernetes.io/version: 11.3.2
-    helm.sh/chart: mariadb-18.2.4
+    helm.sh/chart: mariadb-18.2.6
 automountServiceAccountToken: false
 ---
 # Source: wordpress/templates/serviceaccount.yaml
@@ -121,7 +121,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: wordpress
     app.kubernetes.io/version: 6.5.5
-    helm.sh/chart: wordpress-22.4.16
+    helm.sh/chart: wordpress-22.4.17
 automountServiceAccountToken: false
 ---
 # Source: wordpress/charts/mariadb/templates/secrets.yaml
@@ -135,7 +135,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: mariadb
     app.kubernetes.io/version: 11.3.2
-    helm.sh/chart: mariadb-18.2.4
+    helm.sh/chart: mariadb-18.2.6
 type: Opaque
 data:
   mariadb-root-password: "cGFzc3dvcmQ="
@@ -152,7 +152,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: wordpress
     app.kubernetes.io/version: 6.5.5
-    helm.sh/chart: wordpress-22.4.16
+    helm.sh/chart: wordpress-22.4.17
 type: Opaque
 data:
   wordpress-password: "cGFzc3dvcmQ="
@@ -168,7 +168,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: mariadb
     app.kubernetes.io/version: 11.3.2
-    helm.sh/chart: mariadb-18.2.4
+    helm.sh/chart: mariadb-18.2.6
     app.kubernetes.io/component: primary
 data:
   my.cnf: |-
@@ -212,7 +212,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: wordpress
     app.kubernetes.io/version: 6.5.5
-    helm.sh/chart: wordpress-22.4.16
+    helm.sh/chart: wordpress-22.4.17
 spec:
   accessModes:
     - "ReadWriteOnce"
@@ -231,7 +231,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: mariadb
     app.kubernetes.io/version: 11.3.2
-    helm.sh/chart: mariadb-18.2.4
+    helm.sh/chart: mariadb-18.2.6
     app.kubernetes.io/component: primary
   annotations:
 spec:
@@ -259,7 +259,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: wordpress
     app.kubernetes.io/version: 6.5.5
-    helm.sh/chart: wordpress-22.4.16
+    helm.sh/chart: wordpress-22.4.17
 spec:
   type: ClusterIP
   sessionAffinity: None
@@ -289,7 +289,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: wordpress
     app.kubernetes.io/version: 6.5.5
-    helm.sh/chart: wordpress-22.4.16
+    helm.sh/chart: wordpress-22.4.17
 spec:
   selector:
     matchLabels:
@@ -304,7 +304,7 @@ spec:
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: wordpress
         app.kubernetes.io/version: 6.5.5
-        helm.sh/chart: wordpress-22.4.16
+        helm.sh/chart: wordpress-22.4.17
     spec:
       
       automountServiceAccountToken: false
@@ -328,38 +328,8 @@ spec:
               weight: 1
         nodeAffinity:
           
-      securityContext:
-        fsGroupChangePolicy: Always
-        supplementalGroups: []
-        sysctls: []
       serviceAccountName: release-name-wordpress
       initContainers:
-        - name: volume-permissions
-          image: "docker.io/bitnami/os-shell:12-debian-12-r22"
-          imagePullPolicy: "IfNotPresent"
-          command:
-            - /bin/bash
-          args:
-            - -ec
-            - |
-              mkdir -p /bitnami/wordpress
-              find /bitnami/wordpress -mindepth 0 -maxdepth 1 -not -name ".snapshot" -not -name "lost+found" | xargs -r chown -R 1001:1001
-          securityContext:
-            runAsUser: 0
-            seLinuxOptions: {}
-          resources:
-            limits:
-              cpu: 150m
-              ephemeral-storage: 1024Mi
-              memory: 192Mi
-            requests:
-              cpu: 100m
-              ephemeral-storage: 50Mi
-              memory: 128Mi
-          volumeMounts:
-            - mountPath: /bitnami/wordpress
-              name: wordpress-data
-              subPath: wordpress
         - name: prepare-base-dir
           image: docker.io/bitnami/wordpress:6.5.5-debian-12-r1
           imagePullPolicy: "IfNotPresent"
@@ -557,7 +527,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: wordpress
     app.kubernetes.io/version: 6.5.5
-    helm.sh/chart: wordpress-22.4.16
+    helm.sh/chart: wordpress-22.4.17
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
@@ -590,7 +560,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: mariadb
     app.kubernetes.io/version: 11.3.2
-    helm.sh/chart: mariadb-18.2.4
+    helm.sh/chart: mariadb-18.2.6
     app.kubernetes.io/component: primary
 spec:
   replicas: 1
@@ -606,13 +576,13 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/configuration: 822174d7fc08def6a3f07c5ee417cea78e3aebbccac2f8a13ddd2b057a638b08
+        checksum/configuration: 455d968b0fb015b0844f9eab48c2a9b799223cbb2fd9ca28dbf6601a7e6f5502
       labels:
         app.kubernetes.io/instance: release-name
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: mariadb
         app.kubernetes.io/version: 11.3.2
-        helm.sh/chart: mariadb-18.2.4
+        helm.sh/chart: mariadb-18.2.6
         app.kubernetes.io/component: primary
     spec:
       
@@ -639,7 +609,7 @@ spec:
         sysctls: []
       initContainers:
         - name: preserve-logs-symlinks
-          image: docker.io/bitnami/mariadb:11.3.2-debian-12-r6
+          image: docker.io/bitnami/mariadb:11.3.2-debian-12-r9
           imagePullPolicy: "IfNotPresent"
           securityContext:
             allowPrivilegeEscalation: false
@@ -677,7 +647,7 @@ spec:
               mountPath: /emptydir
       containers:
         - name: mariadb
-          image: docker.io/bitnami/mariadb:11.3.2-debian-12-r6
+          image: docker.io/bitnami/mariadb:11.3.2-debian-12-r9
           imagePullPolicy: "IfNotPresent"
           securityContext:
             allowPrivilegeEscalation: false
@@ -799,7 +769,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: wordpress
     app.kubernetes.io/version: 6.5.5
-    helm.sh/chart: wordpress-22.4.16
+    helm.sh/chart: wordpress-22.4.17
 spec:
   rules:
     - host: "wordpress.local"
