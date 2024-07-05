@@ -443,7 +443,7 @@ podSecurityContext:
 containerSecurityContext:
   enabled: true
   seLinuxOptions: {}
-  runAsUser: 1001020000
+  runAsUser: 1001
   runAsGroup: 1001
   runAsNonRoot: true
   privileged: false

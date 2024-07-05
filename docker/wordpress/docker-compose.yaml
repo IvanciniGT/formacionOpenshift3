@@ -1,0 +1,29 @@
+version: "3.0"
+
+# docker compose -f <DOCKER COMPOSE FILE PATH> up -d
+# docker compose down
+# docker compose start
+# docker compose stop
+# docker compose restart
+
+services: # Under service we are going to DESCRIBE the containers
+
+    mariadb: # network name that you can use to refer to that dontainer within the network that was created for them
+        container_name:     mymariadb
+        image:              mariadb:latest
+        environment:
+                          - MARIADB_ROOT_PASSWORD=password
+                          - MARIADB_DATABASE=database
+                          - MARIADB_USER=user
+                          - MARIADB_PASSWORD=password
+                          
+    wordpress:
+        container_name:     mywordpress
+        image:              wordpress:latest
+        ports:
+                          - 8080:80 
+        environment:
+            WORDPRESS_DB_NAME:      database
+            WORDPRESS_DB_USER:      user
+            WORDPRESS_DB_PASSWORD:  password
+            WORDPRESS_DB_HOST:      mariadb:3306

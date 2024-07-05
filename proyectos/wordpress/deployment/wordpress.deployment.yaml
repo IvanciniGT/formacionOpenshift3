@@ -3,7 +3,7 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: wp
+  name: wp-ivan
 ---
 # Secret para la BBDD
 apiVersion: v1
@@ -39,7 +39,7 @@ spec:
             labels:  
               app:  bbdd
         spec:
-            serviceAccountName:     wp
+            serviceAccountName:     wp-ivan
             containers:
                 - name:             bbdd
                   image:            mariadb:latest
@@ -114,7 +114,12 @@ spec:
         requests:
             storage: 1Gi
     accessModes:
-        - ReadWriteOnce # Que pueda ser montado en varios pods
+        - ReadWriteOnce # El volumen puede ser montado en un único NODO...Y en ese nodo ser usado por LOS PODS QUE QUIERA
+        # ReadWriteMany # El volumen puede ser montado en varios NODOS... Y en cada uno ser usado por LOS PODS QUE QUIERA
+        # ReadOnlyMany, # El volumen puede ser montado en varios NODOS... Y en cada uno ser usado por LOS PODS QUE QUIERA
+                        # Pero en modo solo lectura
+        # ReadWriteOncePod Salió mucho más tarde (2 años)
+            # El volumen puede ser montado en un único NODO...Y en ese nodo ser usado por UN UNICO POD
 
 
 ---
@@ -130,14 +135,24 @@ spec:
     replicas: 2
     selector:
         matchLabels:
-            app:  wp
+            app:  wp-12892891236781
     template:
         metadata:
             name: wp
             labels:  
-                app:  wp
+                app:  wp-12892891236781
         spec:
-            serviceAccountName:     wp
+#            affinity:
+#                podAntiAffinity:
+#                  requiredDuringSchedulingIgnoredDuringExecution:
+#                  - labelSelector:
+#                      matchExpressions:
+#                      - key: app
+#                        operator: In
+#                        values:
+#                        - wp-12892891236781
+#                    topologyKey: topology.kubernetes.io/zone
+            serviceAccountName:     wp-ivan
             containers:
                 - name:             wp
                   image:            wordpress:latest
@@ -145,10 +160,10 @@ spec:
                   resources:
                     requests:
                         memory:     512Mi
-                        cpu:        1
+                        cpu:        100m
                     limits:
                         memory:     512Mi
-                        cpu:        2                  
+                        cpu:        500m                  
                   env:
                     - name:         WORDPRESS_DB_HOST
                       value:        bbdd
@@ -175,6 +190,7 @@ spec:
                   persistentVolumeClaim:
                     claimName:      pvc-wp
 
+
 ---
 
 ## Servicio ClusterIP para el Wordpress
@@ -190,7 +206,7 @@ spec:
         - port: 80 # En la IP de balanceo
           targetPort: 80 # Del contenedor que hay detrás
     selector:
-          app:  wp # Los pods que haya con esta etiqueta (TODOS LOS CREADOS DESDE MI PLANTILLA, donde tengo definida esa etiqueta)
+          app:  wp-12892891236781 # Los pods que haya con esta etiqueta (TODOS LOS CREADOS DESDE MI PLANTILLA, donde tengo definida esa etiqueta)
                      # Sirven para dar este servicio (son el backend del servicio)
 ---
 

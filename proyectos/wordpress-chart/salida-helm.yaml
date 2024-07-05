@@ -1,115 +1,4 @@
----
-# Source: wordpress/charts/mariadb/templates/networkpolicy.yaml
-kind: NetworkPolicy
-apiVersion: networking.k8s.io/v1
-metadata:
-  name: release-name-mariadb
-  namespace: "ivan"
-  labels:
-    app.kubernetes.io/instance: release-name
-    app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/name: mariadb
-    app.kubernetes.io/version: 11.3.2
-    helm.sh/chart: mariadb-18.2.6
-spec:
-  podSelector:
-    matchLabels:
-      app.kubernetes.io/instance: release-name
-      app.kubernetes.io/managed-by: Helm
-      app.kubernetes.io/name: mariadb
-      app.kubernetes.io/version: 11.3.2
-      helm.sh/chart: mariadb-18.2.6
-  policyTypes:
-    - Ingress
-    - Egress
-  egress:
-    - {}
-  ingress:
-    - ports:
-        - port: 3306
-        - port: 3306
----
-# Source: wordpress/templates/networkpolicy.yaml
-kind: NetworkPolicy
-apiVersion: networking.k8s.io/v1
-metadata:
-  name: release-name-wordpress
-  namespace: "ivan"
-  labels:
-    app.kubernetes.io/instance: release-name
-    app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/name: wordpress
-    app.kubernetes.io/version: 6.5.5
-    helm.sh/chart: wordpress-22.4.17
-spec:
-  podSelector:
-    matchLabels:
-      app.kubernetes.io/instance: release-name
-      app.kubernetes.io/name: wordpress
-  policyTypes:
-    - Ingress
-    - Egress
-  egress:
-    - {}
-  ingress:
-    - ports:
-        - port: 8080
-        - port: 8443
----
-# Source: wordpress/charts/mariadb/templates/primary/pdb.yaml
-apiVersion: policy/v1
-kind: PodDisruptionBudget
-metadata:
-  name: release-name-mariadb
-  namespace: "ivan"
-  labels:
-    app.kubernetes.io/instance: release-name
-    app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/name: mariadb
-    app.kubernetes.io/version: 11.3.2
-    helm.sh/chart: mariadb-18.2.6
-    app.kubernetes.io/component: primary
-spec:
-  maxUnavailable: 1
-  selector:
-    matchLabels:
-      app.kubernetes.io/instance: release-name
-      app.kubernetes.io/name: mariadb
-      app.kubernetes.io/component: primary
----
-# Source: wordpress/templates/pdb.yaml
-apiVersion: policy/v1
-kind: PodDisruptionBudget
-metadata:
-  name: release-name-wordpress
-  namespace: "ivan"
-  labels:
-    app.kubernetes.io/instance: release-name
-    app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/name: wordpress
-    app.kubernetes.io/version: 6.5.5
-    helm.sh/chart: wordpress-22.4.17
-spec:
-  maxUnavailable: 1
-  selector:
-    matchLabels:
-      app.kubernetes.io/instance: release-name
-      app.kubernetes.io/name: wordpress
----
-# Source: wordpress/charts/mariadb/templates/serviceaccount.yaml
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: release-name-mariadb
-  namespace: "ivan"
-  labels:
-    app.kubernetes.io/instance: release-name
-    app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/name: mariadb
-    app.kubernetes.io/version: 11.3.2
-    helm.sh/chart: mariadb-18.2.6
-automountServiceAccountToken: false
----
+
 # Source: wordpress/templates/serviceaccount.yaml
 apiVersion: v1
 kind: ServiceAccount
@@ -123,160 +12,6 @@ metadata:
     app.kubernetes.io/version: 6.5.5
     helm.sh/chart: wordpress-22.4.17
 automountServiceAccountToken: false
----
-# Source: wordpress/charts/mariadb/templates/secrets.yaml
-apiVersion: v1
-kind: Secret
-metadata:
-  name: release-name-mariadb
-  namespace: "ivan"
-  labels:
-    app.kubernetes.io/instance: release-name
-    app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/name: mariadb
-    app.kubernetes.io/version: 11.3.2
-    helm.sh/chart: mariadb-18.2.6
-type: Opaque
-data:
-  mariadb-root-password: "cGFzc3dvcmQ="
-  mariadb-password: "cGFzc3dvcmQ="
----
-# Source: wordpress/templates/secrets.yaml
-apiVersion: v1
-kind: Secret
-metadata:
-  name: release-name-wordpress
-  namespace: "ivan"
-  labels:
-    app.kubernetes.io/instance: release-name
-    app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/name: wordpress
-    app.kubernetes.io/version: 6.5.5
-    helm.sh/chart: wordpress-22.4.17
-type: Opaque
-data:
-  wordpress-password: "cGFzc3dvcmQ="
----
-# Source: wordpress/charts/mariadb/templates/primary/configmap.yaml
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: release-name-mariadb
-  namespace: "ivan"
-  labels:
-    app.kubernetes.io/instance: release-name
-    app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/name: mariadb
-    app.kubernetes.io/version: 11.3.2
-    helm.sh/chart: mariadb-18.2.6
-    app.kubernetes.io/component: primary
-data:
-  my.cnf: |-
-    [mysqld]
-    skip-name-resolve
-    explicit_defaults_for_timestamp
-    basedir=/opt/bitnami/mariadb
-    datadir=/bitnami/mariadb/data
-    plugin_dir=/opt/bitnami/mariadb/plugin
-    port=3306
-    socket=/opt/bitnami/mariadb/tmp/mysql.sock
-    tmpdir=/opt/bitnami/mariadb/tmp
-    max_allowed_packet=16M
-    bind-address=*
-    pid-file=/opt/bitnami/mariadb/tmp/mysqld.pid
-    log-error=/opt/bitnami/mariadb/logs/mysqld.log
-    character-set-server=UTF8
-    collation-server=utf8_general_ci
-    slow_query_log=0
-    long_query_time=10.0
-    
-    [client]
-    port=3306
-    socket=/opt/bitnami/mariadb/tmp/mysql.sock
-    default-character-set=UTF8
-    plugin_dir=/opt/bitnami/mariadb/plugin
-    
-    [manager]
-    port=3306
-    socket=/opt/bitnami/mariadb/tmp/mysql.sock
-    pid-file=/opt/bitnami/mariadb/tmp/mysqld.pid
----
-# Source: wordpress/templates/pvc.yaml
-kind: PersistentVolumeClaim
-apiVersion: v1
-metadata:
-  name: release-name-wordpress
-  namespace: "ivan"
-  labels:
-    app.kubernetes.io/instance: release-name
-    app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/name: wordpress
-    app.kubernetes.io/version: 6.5.5
-    helm.sh/chart: wordpress-22.4.17
-spec:
-  accessModes:
-    - "ReadWriteOnce"
-  resources:
-    requests:
-      storage: "10Gi"
----
-# Source: wordpress/charts/mariadb/templates/primary/svc.yaml
-apiVersion: v1
-kind: Service
-metadata:
-  name: release-name-mariadb
-  namespace: "ivan"
-  labels:
-    app.kubernetes.io/instance: release-name
-    app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/name: mariadb
-    app.kubernetes.io/version: 11.3.2
-    helm.sh/chart: mariadb-18.2.6
-    app.kubernetes.io/component: primary
-  annotations:
-spec:
-  type: ClusterIP
-  sessionAffinity: None
-  ports:
-    - name: mysql
-      port: 3306
-      protocol: TCP
-      targetPort: mysql
-      nodePort: null
-  selector:
-    app.kubernetes.io/instance: release-name
-    app.kubernetes.io/name: mariadb
-    app.kubernetes.io/component: primary
----
-# Source: wordpress/templates/svc.yaml
-apiVersion: v1
-kind: Service
-metadata:
-  name: release-name-wordpress
-  namespace: "ivan"
-  labels:
-    app.kubernetes.io/instance: release-name
-    app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/name: wordpress
-    app.kubernetes.io/version: 6.5.5
-    helm.sh/chart: wordpress-22.4.17
-spec:
-  type: ClusterIP
-  sessionAffinity: None
-  ports:
-    - name: http
-      port: 80
-      protocol: TCP
-      targetPort: http
-      nodePort: null
-    - name: https
-      port: 443
-      protocol: TCP
-      targetPort: https
-      nodePort: null
-  selector:
-    app.kubernetes.io/instance: release-name
-    app.kubernetes.io/name: wordpress
 ---
 # Source: wordpress/templates/deployment.yaml
 apiVersion: apps/v1
@@ -328,8 +63,38 @@ spec:
               weight: 1
         nodeAffinity:
           
+      securityContext:
+        fsGroupChangePolicy: Always
+        supplementalGroups: []
+        sysctls: []
       serviceAccountName: release-name-wordpress
       initContainers:
+        - name: volume-permissions
+          image: "docker.io/bitnami/os-shell:12-debian-12-r22"
+          imagePullPolicy: "IfNotPresent"
+          command:
+            - /bin/bash
+          args:
+            - -ec
+            - |
+              mkdir -p /bitnami/wordpress
+              find /bitnami/wordpress -mindepth 0 -maxdepth 1 -not -name ".snapshot" -not -name "lost+found" | xargs -r chown -R 1.00102e+09:1001
+          securityContext:
+            runAsUser: 0
+            seLinuxOptions: {}
+          resources:
+            limits:
+              cpu: 150m
+              ephemeral-storage: 1024Mi
+              memory: 192Mi
+            requests:
+              cpu: 100m
+              ephemeral-storage: 50Mi
+              memory: 128Mi
+          volumeMounts:
+            - mountPath: /bitnami/wordpress
+              name: wordpress-data
+              subPath: wordpress
         - name: prepare-base-dir
           image: docker.io/bitnami/wordpress:6.5.5-debian-12-r1
           imagePullPolicy: "IfNotPresent"
@@ -515,39 +280,6 @@ spec:
         - name: wordpress-data
           persistentVolumeClaim:
             claimName: release-name-wordpress
----
-# Source: wordpress/templates/hpa.yaml
-apiVersion: autoscaling/v2
-kind: HorizontalPodAutoscaler
-metadata:
-  name: release-name-wordpress
-  namespace: "ivan"
-  labels:
-    app.kubernetes.io/instance: release-name
-    app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/name: wordpress
-    app.kubernetes.io/version: 6.5.5
-    helm.sh/chart: wordpress-22.4.17
-spec:
-  scaleTargetRef:
-    apiVersion: apps/v1
-    kind: Deployment
-    name: release-name-wordpress
-  minReplicas: 2
-  maxReplicas: 4
-  metrics:
-    - type: Resource
-      resource:
-        name: memory
-        target:
-          type: Utilization
-          averageUtilization: 50
-    - type: Resource
-      resource:
-        name: cpu
-        target:
-          type: Utilization
-          averageUtilization: 50
 ---
 # Source: wordpress/charts/mariadb/templates/primary/statefulset.yaml
 apiVersion: apps/v1
@@ -757,28 +489,3 @@ spec:
         resources:
           requests:
             storage: "8Gi"
----
-# Source: wordpress/templates/ingress.yaml
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: release-name-wordpress
-  namespace: "ivan"
-  labels:
-    app.kubernetes.io/instance: release-name
-    app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/name: wordpress
-    app.kubernetes.io/version: 6.5.5
-    helm.sh/chart: wordpress-22.4.17
-spec:
-  rules:
-    - host: "wordpress.local"
-      http:
-        paths:
-          - path: /
-            pathType: ImplementationSpecific
-            backend:
-              service:
-                name: release-name-wordpress
-                port:
-                  name: http
